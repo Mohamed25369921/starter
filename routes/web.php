@@ -2,6 +2,10 @@
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CrudController;
+use Laravel\Socialite\Facades\Socialite;
+use App\Http\Controllers\SocialController;
+use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,3 +25,20 @@ Route::get('/', function () {
 Auth::routes(['verify' => true]);
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home')->middleware('verified');
+
+Route::get('/redirect/{service}', [SocialController::class, 'redirect']);
+Route::get('/callback/{service}', [SocialController::class, 'callback']);
+
+Route::group(
+    [
+        'prefix' => LaravelLocalization::setLocale(),
+        'middleware' => [ 'localeSessionRedirect', 'localizationRedirect', 'localeViewPath' ]
+    ], function(){
+            Route::group(['prefix' => 'offer'],function(){
+            
+                Route::get('all', [CrudController::class, 'getOffers']);
+                Route::get('create', [CrudController::class, 'create']);
+                Route::post('store', [CrudController::class, 'store'])->name('offer.store');
+            });
+    
+});
